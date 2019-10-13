@@ -4,8 +4,8 @@ import React from 'react';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import createShallowComponent from './utils/createShallowComponent';
-import BurgerMenu from '../lib/BurgerMenu';
-const Menu = BurgerMenu.scaleDown;
+import BurgerMenu from '../src/BurgerMenu';
+const Menu = BurgerMenu.scaleDown.default;
 
 describe('scaleDown', () => {
 
@@ -37,8 +37,8 @@ describe('scaleDown', () => {
     component = createShallowComponent(<Menu pageWrapId={ 'page-wrap' } outerContainerId={ 'outer-container' }><div>An item</div></Menu>);
     menuWrap = component.props.children[1];
     expect(menuWrap.props.style.position).to.equal('fixed');
-    expect(menuWrap.props.style.zIndex).to.equal(2);
-    expect(menuWrap.props.style.width).to.equal('300px');
+    expect(menuWrap.props.style.zIndex).to.equal(1100);
+    expect(menuWrap.props.style.width).to.equal(300);
     expect(menuWrap.props.style.height).to.equal('100%');
   });
 
@@ -59,7 +59,6 @@ describe('scaleDown', () => {
     component = TestUtils.renderIntoDocument(<Menu pageWrapId={ 'page-wrap' } outerContainerId={ 'outer-container' }><div>An item</div></Menu>);
     firstItem = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-item-list').children[0];
     expect(firstItem.style.display).to.equal('block');
-    expect(firstItem.style.outline).to.equal('none');
   });
 
   it('can be positioned on the right', () => {

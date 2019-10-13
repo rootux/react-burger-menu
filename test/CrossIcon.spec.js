@@ -4,7 +4,7 @@ import React from 'react';
 import TestUtils from 'react-dom/test-utils';
 import { assert, expect } from 'chai';
 import createShallowComponent from './utils/createShallowComponent';
-import CrossIcon from '../lib/CrossIcon';
+import CrossIcon from '../src/CrossIcon';
 
 describe('CrossIcon component', () => {
 
@@ -132,9 +132,8 @@ describe('CrossIcon component', () => {
         margin: 0,
         padding: 0,
         border: 'none',
-        textIndent: -9999,
+        fontSize: 0,
         background: 'transparent',
-        outline: 'none',
         cursor: 'pointer'
       };
       expect(button.props.style).to.deep.equal(expected);

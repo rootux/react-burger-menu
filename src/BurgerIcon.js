@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 export default class BurgerIcon extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.state = {
       hover: false
@@ -18,7 +18,8 @@ export default class BurgerIcon extends Component {
       left: 0,
       right: 0,
       top: 20 * (index * 2) + '%',
-      opacity: this.state.hover ? 0.6 : 1
+      opacity: this.state.hover ? 0.6 : 1,
+      ...(this.state.hover && this.props.styles.bmBurgerBarsHover)
     };
   }
 
@@ -33,25 +34,34 @@ export default class BurgerIcon extends Component {
       margin: 0,
       padding: 0,
       border: 'none',
-      opacity: 0,
-      fontSize: 8,
+      fontSize: 0,
+      background: 'transparent',
       cursor: 'pointer'
     };
 
     if (this.props.customIcon) {
       let extraProps = {
-        className: 'bm-icon',
-        style: {...{width: '100%', height: '100%'}, ...this.props.styles.bmIcon}
+        className: `bm-icon ${this.props.customIcon.props.className ||
+          ''}`.trim(),
+        style: {
+          ...{ width: '100%', height: '100%' },
+          ...this.props.styles.bmIcon
+        }
       };
       icon = React.cloneElement(this.props.customIcon, extraProps);
     } else {
       icon = (
         <span>
-          {[0, 1, 2].map((bar) => (
+          {[0, 1, 2].map(bar => (
             <span
               key={bar}
-              className={`bm-burger-bars ${this.props.barClassName}`}
-              style={{...this.getLineStyle(bar), ...this.props.styles.bmBurgerBars}}
+              className={`bm-burger-bars ${this.props.barClassName} ${
+                this.state.hover ? 'bm-burger-bars-hover' : ''
+              }`.trim()}
+              style={{
+                ...this.getLineStyle(bar),
+                ...this.props.styles.bmBurgerBars
+              }}
             />
           ))}
         </span>
@@ -60,14 +70,17 @@ export default class BurgerIcon extends Component {
 
     return (
       <div
-        className={`bm-burger-button ${this.props.className}`}
-        style={{...{zIndex: 1}, ...this.props.styles.bmBurgerButton}}
+        className={`bm-burger-button ${this.props.className}`.trim()}
+        style={{
+          ...{ zIndex: 1000 },
+          ...this.props.styles.bmBurgerButton
+        }}
       >
         {icon}
         <button
           onClick={this.props.onClick}
-          onMouseOver={() => this.setState({hover: true})}
-          onMouseOut={() => this.setState({hover: false})}
+          onMouseOver={() => this.setState({ hover: true })}
+          onMouseOut={() => this.setState({ hover: false })}
           style={buttonStyle}
         >
           Open Menu
