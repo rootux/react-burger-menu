@@ -6,7 +6,8 @@ import TestUtils from 'react-dom/test-utils';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import createShallowComponent from './utils/createShallowComponent';
-import menuFactory from '../lib/menuFactory';
+import createMountedComponent from './utils/createMountedComponent';
+import menuFactory from '../src/menuFactory';
 
 describe('menuFactory', () => {
 
@@ -48,6 +49,9 @@ describe('menuFactory', () => {
     bmItemList: {
       color: 'white'
     },
+    bmItem: {
+      color: 'white'
+    },
     bmOverlay: {
       background: 'rgba(0, 0, 0, 0.5)'
     }
@@ -65,6 +69,12 @@ describe('menuFactory', () => {
   function removeWrapperElementsFromDOM() {
     let outerContainer = document.getElementById('outer-container');
     document.body.removeChild(outerContainer);
+  }
+
+  function clearHtmlBodyInlineStyles() {
+    const html = document.querySelector('html');
+    const body = document.querySelector('body');
+    [html, body].forEach(el => el.removeAttribute('style'));
   }
 
   it('exists and is not undefined', () => {
@@ -104,6 +114,15 @@ describe('menuFactory', () => {
       component = createShallowComponent(<Menu className={ 'custom-class' } />);
       const menuWrap = component.props.children[1];
       expect(menuWrap.props.className).to.contain('custom-class');
+    });
+
+    it('accepts an optional htmlClassName, applied only when menu is open', () => {
+      component = TestUtils.renderIntoDocument(<Menu htmlClassName={ 'custom-class' } />);
+      const html = document.querySelector('html');
+      expect(html.classList.contains('custom-class')).to.be.false;
+      component.toggleMenu();
+      expect(html.classList.contains('custom-class')).to.be.true;
+      component.toggleMenu();
     });
 
     it('accepts an optional bodyClassName, applied only when menu is open', () => {
@@ -162,6 +181,26 @@ describe('menuFactory', () => {
       const overlay = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-overlay');
       TestUtils.Simulate.click(overlay);
       expect(component.state.isOpen).to.be.true;
+    });
+  });
+
+  describe('react <StrictMode>', () => {
+    let stubConsoleError;
+    let errorLogs = [];
+
+    beforeEach(() => {
+      errorLogs = [];
+      stubConsoleError = sinon.stub(console, 'error').callsFake((...args) => errorLogs.push(args));
+    });
+
+    afterEach(() => {
+      stubConsoleError.restore();
+    });
+
+    it('renders without strict mode warnings', () => {
+      Menu = menuFactory(mockStyles.basic);
+      component = createMountedComponent(<React.StrictMode><Menu /></React.StrictMode>);
+      expect(errorLogs).to.deep.equal([]);
     });
   });
 
@@ -271,6 +310,27 @@ describe('menuFactory', () => {
     });
   });
 
+  describe('item element', () => {
+
+    it('can be styled with props', () => {
+      component = TestUtils.renderIntoDocument(<Menu styles={mockStylesProp}><div>A child</div></Menu >);
+      const item = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-item');
+      expect(item.style.color).to.equal('white');
+    });
+
+    it('accepts an optional itemClassName', () => {
+      component = TestUtils.renderIntoDocument(<Menu itemClassName={'custom-class'}><div>A child</div></Menu >);
+      const item = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-item');
+      expect(item.classList.toString()).to.contain('custom-class');
+    });
+
+    it('retains any className already present', () => {
+      component = TestUtils.renderIntoDocument(<Menu itemClassName={'custom-class'}><div className="existing-class">A child</div></Menu >);
+      const item = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-item');
+      expect(item.classList.toString()).to.contain('existing-class');
+    });
+  });
+
   describe('overlay', () => {
 
     it('can be styled with props', () => {
@@ -370,9 +430,9 @@ describe('menuFactory', () => {
   describe('applyWrapperStyles method', () => {
 
     beforeEach(() => {
+      addWrapperElementsToDOM();
       Menu = menuFactory(mockStyles.full);
       component = TestUtils.renderIntoDocument(<Menu pageWrapId={ 'page-wrap' } outerContainerId={ 'outer-container' } />);
-      addWrapperElementsToDOM();
     });
 
     afterEach(() => {
@@ -403,72 +463,142 @@ describe('menuFactory', () => {
     };
 
     beforeEach(() => {
+      addWrapperElementsToDOM();
       Menu = menuFactory(mockStyles.full);
       component = TestUtils.renderIntoDocument(<Menu pageWrapId={ 'page-wrap' } outerContainerId={ 'outer-container' } />);
     });
 
+    afterEach(() => {
+      removeWrapperElementsFromDOM();
+      clearHtmlBodyInlineStyles();
+    });
+
     it('errors with the correct message if no wrapper element found', () => {
+      removeWrapperElementsFromDOM();
       const error = sinon.stub(console, 'error');
       component.handleExternalWrapper('page-wrap', mockStyles.full.pageWrap, true);
       assert.ok(error.calledWith("Element with ID 'page-wrap' not found"));
       console.error.restore();
+      addWrapperElementsToDOM();
     });
 
     it('sets styles on external wrapper elements', () => {
-      addWrapperElementsToDOM();
       component.handleExternalWrapper('page-wrap', styles, true);
       let wrapperElement = document.getElementById('page-wrap');
       expect(wrapperElement.style.color).to.equal('red');
       expect(wrapperElement.style.position).to.equal('relative');
-      removeWrapperElementsFromDOM();
     });
 
     it('clears styles from external wrapper elements', () => {
-      addWrapperElementsToDOM();
       let wrapperElement = document.getElementById('page-wrap');
       wrapperElement.style.color = 'red';
       wrapperElement.style.position = 'relative';
       component.handleExternalWrapper('page-wrap', styles, false);
-      expect(wrapperElement.style.color).to.be.empty;
-      expect(wrapperElement.style.position).to.be.empty;
-      removeWrapperElementsFromDOM();
+      expect(wrapperElement.style.color).to.equal('');
+      expect(wrapperElement.style.position).to.equal('');
     });
 
     it('sets styles on html and body elements', () => {
-      addWrapperElementsToDOM();
       let html = document.querySelector('html');
       let body = document.querySelector('body');
       component.handleExternalWrapper('page-wrap', styles, true);
       expect(html.style['overflow-x']).to.equal('hidden');
       expect(body.style['overflow-x']).to.equal('hidden');
-      removeWrapperElementsFromDOM();
+    });
+
+    it('does not set styles on html and body elements if custom classes are used', () => {
+      const component = TestUtils.renderIntoDocument(<Menu pageWrapId={ 'page-wrap' } outerContainerId={ 'outer-container' } htmlClassName="custom-html" bodyClassName="custom-body" />);
+      let html = document.querySelector('html');
+      let body = document.querySelector('body');
+      component.handleExternalWrapper('page-wrap', styles, true);
+      expect(html.style['overflow-x']).to.equal('');
+      expect(body.style['overflow-x']).to.equal('');
     });
 
     it('clears styles from html and body elements', () => {
-      addWrapperElementsToDOM();
       let html = document.querySelector('html');
       let body = document.querySelector('body');
       component.handleExternalWrapper('page-wrap', styles, false);
-      expect(html.style['overflow-x']).to.be.empty;
-      expect(body.style['overflow-x']).to.be.empty;
-      removeWrapperElementsFromDOM();
+      expect(html.style['overflow-x']).to.equal('');
+      expect(body.style['overflow-x']).to.equal('');
     });
   });
 
   describe('listenForClose method', () => {
 
-    beforeEach(() => {
-      addWrapperElementsToDOM();
+    it('closes the menu when Escape is pressed', () => {
+      Menu = menuFactory(mockStyles.basic);
+      component = TestUtils.renderIntoDocument(<Menu />);
       component.setState({ isOpen: true });
-    });
-
-    afterEach(() => {
-      removeWrapperElementsFromDOM();
-    });
-
-    it('closes the menu when escape is pressed', () => {
       component.listenForClose({ key: 'Escape', target: '' });
       expect(component.state.isOpen).to.be.false;
+    });
+  });
+
+  describe('isOpen prop', () => {
+
+    let container;
+
+    beforeEach(() => {
+      Menu = menuFactory(mockStyles.basic);
+      container = document.createElement('div');
+    });
+
+    it('should render open if set to true', () => {
+      class ParentComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { example: true };
+        }
+        render() {
+          return <Menu ref="menu" isOpen={this.state.example} />;
+        }
+      }
+
+      const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
+      const menu = parent.refs.menu;
+      expect(menu.state.isOpen).to.be.true;
+    });
+
+    it('should render closed if set to false', () => {
+      class ParentComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { example: false };
+        }
+        render() {
+          return <Menu ref="menu" isOpen={this.state.example} />;
+        }
+      }
+
+      const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
+      const menu = parent.refs.menu;
+      expect(menu.state.isOpen).to.be.false;
+    });
+  });
+
+  describe('disableCloseOnEsc prop', () => {
+
+    it('should not allow close on Escape key press', () => {
+      Menu = menuFactory(mockStyles.basic);
+      component = TestUtils.renderIntoDocument(<Menu disableCloseOnEsc />);
+      component.setState({ isOpen: true });
+      window.onkeydown({ key: 'Escape' });
+      expect(component.state.isOpen).to.be.true;
+    });
+  });
+
+  describe('customOnKeyDown prop', () => {
+
+    it('should be set for window.onkeydown instead of listenForClose', () => {
+      Menu = menuFactory(mockStyles.basic);
+      const customOnKeyDown = sinon.spy();
+      component = TestUtils.renderIntoDocument(<Menu customOnKeyDown={customOnKeyDown} />);
+      const listenForClose = sinon.spy(component, 'listenForClose');
+      component.setState({ isOpen: true });
+      window.onkeydown();
+      expect(customOnKeyDown.called).to.be.true;
+      expect(listenForClose.called).to.be.false;
     });
   });
 
@@ -479,11 +609,6 @@ describe('menuFactory', () => {
     beforeEach(() => {
       Menu = menuFactory(mockStyles.basic);
       container = document.createElement('div');
-    });
-
-    it('can be set externally', () => {
-      component = TestUtils.renderIntoDocument(<Menu isOpen />);
-      expect(component.state.isOpen).to.be.true;
     });
 
     describe('change', () => {
@@ -525,12 +650,11 @@ describe('menuFactory', () => {
 
         const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
         const menu = parent.refs.menu;
-        menu.setState({isOpen: false});
         parent.triggerStateChange();
         expect(menu.state.isOpen).to.be.true;
       });
 
-      it('should not occur when receiving new props if isOpen prop is undefined', () => {
+      it('should not occur when receiving other props', () => {
         class ParentComponent extends React.Component {
           constructor (props) {
             super(props);
@@ -546,9 +670,8 @@ describe('menuFactory', () => {
 
         const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
         const menu = parent.refs.menu;
-        menu.setState({isOpen: true});
         parent.triggerStateChange();
-        expect(menu.state.isOpen).to.be.true;
+        expect(menu.state.isOpen).to.be.false;
       });
 
       it('should not trigger wrappers if isOpen prop was not changed', () => {
@@ -569,61 +692,49 @@ describe('menuFactory', () => {
 
         const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
         const menu = parent.refs.menu;
-        menu.setState({isOpen: false});
         parent.triggerStateChange();
         expect(applyWrapperStyles.called).to.be.false;
         component.applyWrapperStyles.restore();
       });
 
-      it('should close menu if isOpen is only ever set to false', () => {
+      it('should trigger onStateChange callback if state changes', () => {
+        const callback = sinon.spy();
         class ParentComponent extends React.Component {
           constructor (props) {
             super(props);
             this.state = { example: true };
           }
           triggerStateChange() {
-            this.setState({ example: !this.state.example });
+            this.setState({ example: false });
           }
           render() {
-            return <Menu ref="menu" isOpen={false} />;
+            return <Menu ref="menu" onStateChange={ callback } isOpen={ this.state.example } />;
           }
         }
 
         const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
-        const menu = parent.refs.menu;
-        menu.setState({isOpen: true});
         parent.triggerStateChange();
-        expect(menu.state.isOpen).to.be.false;
+        expect(callback.calledOnce).to.be.true;
       });
 
-      it('should only trigger onStateChange callback if state actually changes', () => {
-        let isOpen = true;
-        let called = false;
-
-        const callback = () => {
-          isOpen = false;
-          called = true;
-        };
+      it('should not trigger onStateChange callback if state does not change', () => {
+        const callback = sinon.spy();
         class ParentComponent extends React.Component {
           constructor (props) {
             super(props);
             this.state = { example: true };
           }
           triggerStateChange() {
-            this.setState({ example: !this.state.example });
+            this.setState({ example: true });
           }
           render() {
-            return <Menu ref="menu" onStateChange={ callback } isOpen={ isOpen } />;
+            return <Menu ref="menu" onStateChange={ callback } isOpen={ this.state.example } />;
           }
         }
 
         const parent = TestUtils.renderIntoDocument(<ParentComponent />, container);
-        const menu = parent.refs.menu;
-        menu.setState({isOpen: false});
-        called = false; // reset called
         parent.triggerStateChange();
-        expect(menu.state.isOpen).to.be.false;
-        expect(called).to.be.false;
+        expect(callback.called).to.be.false;
       });
     });
   });

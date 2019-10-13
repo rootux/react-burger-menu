@@ -1,4 +1,4 @@
-react-burger-menu [![Build Status](https://travis-ci.org/negomi/react-burger-menu.svg?branch=master)](https://travis-ci.org/negomi/react-burger-menu)
+react-burger-menu [![Build Status](https://travis-ci.org/negomi/react-burger-menu.svg?branch=master)](https://travis-ci.org/negomi/react-burger-menu) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 =================
 
 An off-canvas sidebar React component with a collection of effects and styles using CSS transitions and SVG path animations.
@@ -7,7 +7,7 @@ An off-canvas sidebar React component with a collection of effects and styles us
 
 ## Demo & examples
 
-Live demo: [negomi.github.io/react-burger-menu](http://negomi.github.io/react-burger-menu/)
+Live demo: [negomi.github.io/react-burger-menu](https://negomi.github.io/react-burger-menu/)
 
 To build the examples locally, run:
 
@@ -20,9 +20,9 @@ Then open [`localhost:8000`](http://localhost:8000) in a browser.
 
 ## Tests
 
-The test suite uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and [Sinon](http://sinonjs.org/), with [jsdom](https://github.com/tmpvar/jsdom).
+The test suite uses [Mocha](https://mochajs.org/), [Chai](https://chaijs.com/) and [Sinon](https://sinonjs.org/), with [jsdom](https://github.com/tmpvar/jsdom).
 
-*You will need at least Node v4.0.0 (or [io.js](https://iojs.org/en/index.html)) to run the tests, due to jsdom depending on it.*
+*You will need at least Node v4.0.0 to run the tests, due to jsdom depending on it.*
 
 To run the tests once, run:
 
@@ -30,15 +30,15 @@ To run the tests once, run:
 npm test
 ```
 
-To run them with a watcher, TDD style, run:
+To run them with a watcher, run:
 
 ```
-npm run tdd
+npm run test:watch
 ```
 
 ## Installation
 
-The easiest way to use react-burger-menu is to install it from npm and include it in your own React build process (using [Browserify](http://browserify.org), [Webpack](http://webpack.github.io/), etc).
+The easiest way to use react-burger-menu is to install it from npm and include it in your own React build process (using [Browserify](https://browserify.org), [Webpack](https://webpack.github.io/), etc).
 
 You can also use the standalone build by including `dist/react-burger-menu.js` in your page. If you use this, make sure you have already included React, and it is available as a global variable.
 
@@ -70,6 +70,7 @@ class Example extends React.Component {
   }
 
   render () {
+    // NOTE: You also need to provide styles, see https://github.com/negomi/react-burger-menu#styling
     return (
       <Menu>
         <a id="home" className="menu-item" href="/">Home</a>
@@ -84,7 +85,7 @@ class Example extends React.Component {
 
 ### Animations
 
-The example above imported `slide` which renders a menu that slides in on the page when the burger icon is clicked. To use a different animation you can substitute `slide` with any of the following (check out the [demo](http://negomi.github.io/react-burger-menu/) to see the animations in action):
+The example above imported `slide` which renders a menu that slides in on the page when the burger icon is clicked. To use a different animation you can substitute `slide` with any of the following (check out the [demo](https://negomi.github.io/react-burger-menu/) to see the animations in action):
 
 * `slide`
 * `stack`
@@ -172,7 +173,9 @@ You can control whether the sidebar is open or closed with the `isOpen` prop. Th
 <Menu isOpen={ false } />
 ```
 
-*If you want to render the menu open initially, you will need to set this property in your parent component's `componentDidMount()` function.*
+You can see a more detailed example of how to use `isOpen` [here](https://github.com/negomi/react-burger-menu/wiki/FAQ#i-want-to-control-the-open-state-programmatically-but-i-dont-understand-how-to-use-the-isopen-prop).
+
+*Note: If you want to render the menu open initially, you will need to set this property in your parent component's `componentDidMount()` function.*
 
 #### State change
 
@@ -186,6 +189,34 @@ var isMenuOpen = function(state) {
 <Menu onStateChange={ isMenuOpen } />
 ```
 
+#### Close on Escape
+
+By default, the menu will close when the Escape key is pressed. To disable this behavior, you can pass the `disableCloseOnEsc` prop. This is useful in cases where you want the menu to be open all the time, for example if you're implementing a responsive menu that behaves differently depending on the browser width.
+
+``` javascript
+<Menu disableCloseOnEsc />
+```
+
+#### Custom `window.onkeydown` handler
+
+For more control over global keypress functionality, you can override the handler that this component sets for `window.onkeydown`, and pass a custom function. This could be useful if you are using multiple instances of this component, for example, and want to implement functionality to ensure that a single press of the Escape key closes them all.
+
+``` javascript
+const closeAllMenusOnEsc = (e) => {
+  e = e || window.event;
+
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    this.setState({areMenusOpen: false});
+  }
+};
+
+// Because we can only set one window.onkeydown handler, the last menu you include will override any handlers set by previous ones.
+// For that reason, it's recommended that you pass the same function to all menus to avoid unexpected behavior.
+<MenuOne customOnKeyDown={closeAllMenusOnEsc} isOpen={areMenusOpen} />
+<MenuTwo customOnKeyDown={closeAllMenusOnEsc} isOpen={areMenusOpen} />
+```
+*Note: Using this prop will disable all the default 'close on Escape' functionality, so you will need to handle this (including determining which key was pressed) yourself.*
+
 #### Overlay
 
 You can turn off the default overlay with `noOverlay`.
@@ -194,11 +225,22 @@ You can turn off the default overlay with `noOverlay`.
 <Menu noOverlay />
 ```
 
-You can disable the overlay click event (i.e. prevent overlay clicks from closing the menu) with `disableOverlayClick`.
+You can disable the overlay click event (i.e. prevent overlay clicks from closing the menu) with `disableOverlayClick`. This can either be a boolean, or a function that returns a boolean.
 
 ``` javascript
 <Menu disableOverlayClick />
+<Menu disableOverlayClick={() => shouldDisableOverlayClick()} />
 ```
+
+#### Transitions
+
+You can disable all transitions/animations by passing `noTransition`.
+
+``` javascript
+<Menu noTransition />
+```
+
+This is useful if you want the menu to remain open across re-mounts, for example during SPA route changes.
 
 #### Custom icons
 
@@ -241,9 +283,20 @@ You can also pass custom classNames to the other elements:
 <Menu overlayClassName={ "my-class" } />
 ```
 
-And to the `body` element (applied when the menu is open):
+And to the `html` and `body` elements (applied when the menu is open):
 ```javascript
+<Menu htmlClassName={ "my-class" } />
 <Menu bodyClassName={ "my-class" } />
+```
+
+*Note: Passing these props will prevent the menu from applying styles to the `html` or `body` elements automatically. See [here](https://github.com/negomi/react-burger-menu/wiki/FAQ#why-is-overflow-x-hidden-being-set-on-the-html-and-body-elements) for more explanation.*
+
+#### Focusing the first menu item
+
+By default, the menu will set focus on the first item when opened. This is to help with keyboard navigation. If you don't want this functionality, you can pass the `disableAutoFocus` prop.
+
+``` javascript
+<Menu disableAutoFocus />
 ```
 
 ### Styling
@@ -269,6 +322,11 @@ The component has the following helper classes:
   background: #373a47;
 }
 
+/* Color/shape of burger icon bars on hover*/
+.bm-burger-bars-hover {
+  background: #a90000;
+}
+
 /* Position and sizing of clickable cross button */
 .bm-cross-button {
   height: 24px;
@@ -278,6 +336,15 @@ The component has the following helper classes:
 /* Color/shape of close button cross */
 .bm-cross {
   background: #bdc3c7;
+}
+
+/*
+Sidebar wrapper styles
+Note: Beware of modifying this element as it can break the animations - you should not need to touch it in most cases
+*/
+.bm-menu-wrap {
+  position: fixed;
+  height: 100%;
 }
 
 /* General sidebar styles */
@@ -296,6 +363,11 @@ The component has the following helper classes:
 .bm-item-list {
   color: #b8b7ad;
   padding: 0.8em;
+}
+
+/* Individual item */
+.bm-item {
+  display: inline-block;
 }
 
 /* Styling of overlay */
@@ -320,12 +392,19 @@ var styles = {
   bmBurgerBars: {
     background: '#373a47'
   },
+  bmBurgerBarsHover: {
+    background: '#a90000'
+  },
   bmCrossButton: {
     height: '24px',
     width: '24px'
   },
   bmCross: {
     background: '#bdc3c7'
+  },
+  bmMenuWrap: {
+    position: 'fixed',
+    height: '100%'
   },
   bmMenu: {
     background: '#373a47',
@@ -338,6 +417,9 @@ var styles = {
   bmItemList: {
     color: '#b8b7ad',
     padding: '0.8em'
+  },
+  bmItem: {
+    display: 'inline-block'
   },
   bmOverlay: {
     background: 'rgba(0, 0, 0, 0.3)'

@@ -3,13 +3,12 @@
 import menuFactory from '../menuFactory';
 
 const styles = {
-
   pageWrap(isOpen, width, right, top, bottom) {
-    let transform = right ? `translate3d(-${width}, 0, 0)` : `translate3d(${width}, 0, 0)`;
-    if (top)
-      transform = `translate3d(0, ${width}, 0)`;
-    if (bottom)
-      transform = `translate3d(0, -${width}, 0)`;
+    let transform = right
+      ? `translate3d(-${width}, 0, 0)`
+      : `translate3d(${width}, 0, 0)`;
+    if (top) transform = `translate3d(0, ${width}, 0)`;
+    if (bottom) transform = `translate3d(0, -${width}, 0)`;
 
     return {
       MozTransform: isOpen ? '' : transform,

@@ -31,26 +31,32 @@ export default class CrossIcon extends Component {
       margin: 0,
       padding: 0,
       border: 'none',
-      textIndent: -9999,
+      fontSize: 0,
       background: 'transparent',
-      outline: 'none',
       cursor: 'pointer'
     };
 
     if (this.props.customIcon) {
       let extraProps = {
-        className: 'bm-cross',
-        style: {...{width: '100%', height: '100%'}, ...this.props.styles.bmCross}
+        className: `bm-cross ${this.props.customIcon.props.className ||
+          ''}`.trim(),
+        style: {
+          ...{ width: '100%', height: '100%' },
+          ...this.props.styles.bmCross
+        }
       };
       icon = React.cloneElement(this.props.customIcon, extraProps);
     } else {
       icon = (
-        <span style={{position: 'absolute', top: '6px', right: '14px'}}>
+        <span style={{ position: 'absolute', top: '6px', right: '14px' }}>
           {['before', 'after'].map((type, i) => (
             <span
               key={i}
-              className={`bm-cross ${this.props.crossClassName}`}
-              style={{...this.getCrossStyle(type), ...this.props.styles.bmCross}}
+              className={`bm-cross ${this.props.crossClassName}`.trim()}
+              style={{
+                ...this.getCrossStyle(type),
+                ...this.props.styles.bmCross
+              }}
             />
           ))}
         </span>
@@ -59,11 +65,18 @@ export default class CrossIcon extends Component {
 
     return (
       <div
-        className={`bm-cross-button ${this.props.className}`}
-        style={{...buttonWrapperStyle, ...this.props.styles.bmCrossButton}}
+        className={`bm-cross-button ${this.props.className}`.trim()}
+        style={{
+          ...buttonWrapperStyle,
+          ...this.props.styles.bmCrossButton
+        }}
       >
         {icon}
-        <button onClick={this.props.onClick} style={buttonStyle}>
+        <button
+          onClick={this.props.onClick}
+          style={buttonStyle}
+          tabIndex={this.props.tabIndex}
+        >
           Close Menu
         </button>
       </div>
@@ -74,11 +87,13 @@ export default class CrossIcon extends Component {
 CrossIcon.propTypes = {
   crossClassName: PropTypes.string,
   customIcon: PropTypes.element,
-  styles: PropTypes.object
+  styles: PropTypes.object,
+  tabIndex: PropTypes.number
 };
 
 CrossIcon.defaultProps = {
   crossClassName: '',
   className: '',
-  styles: {}
+  styles: {},
+  tabIndex: 0
 };

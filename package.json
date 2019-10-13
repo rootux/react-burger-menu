@@ -1,6 +1,6 @@
 {
   "name": "react-burger-menu",
-  "version": "2.1.6",
+  "version": "2.6.12",
   "description": "An off-canvas sidebar component with a collection of effects and styles using CSS transitions and SVG path animations",
   "main": "lib/BurgerMenu.js",
   "author": "Imogen Wentworth",
@@ -14,34 +14,42 @@
   },
   "dependencies": {
     "browserify-optional": "^1.0.0",
-    "classnames": "^2.1.1",
-    "eve": "~0.4.2",
-    "prop-types": "^15.5.8",
-    "snapsvg-cjs": "0.0.4"
+    "classnames": "^2.2.6",
+    "eve": "~0.5.1",
+    "prop-types": "^15.7.2",
+    "snapsvg-cjs": "0.0.6"
   },
   "devDependencies": {
-    "babel-core": "^6.3.26",
-    "babel-eslint": "^7.0.0",
-    "babel-preset-env": "^1.4.0",
+    "acorn": "^6.1.1",
+    "ajv": "5.0.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.6",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.3.13",
     "babel-register": "^6.3.13",
-    "chai": "^3.2.0",
-    "eslint": "^3.0.0",
-    "eslint-plugin-react": "^6.0.0",
-    "gulp": "^3.8.11",
-    "gulp-git": "^2.0.0",
-    "gulp-mocha": "^3.0.0",
-    "jsdom": "^9.0.0",
-    "mocha": "^3.0.0",
-    "react": "^15.4.1",
-    "react-component-gulp-tasks": "^0.7.1",
-    "react-dom": "^15.4.1",
-    "react-test-renderer": "^15.5.4",
-    "sinon": "^2.1.0"
+    "chai": "^4.2.0",
+    "cross-env": "^5.2.0",
+    "eslint": "^4.19.1",
+    "eslint-plugin-react": "^7.12.4",
+    "gulp": "^3.9.0",
+    "gulp-git": "^2.9.0",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "^3.0.2",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^1.16.4",
+    "react": "^16.8.6",
+    "react-component-gulp-tasks": "github:negomi/react-component-gulp-tasks",
+    "react-dom": "^16.8.6",
+    "react-test-renderer": "^16.8.6",
+    "request": "^2.88.0",
+    "sinon": "^4.5.0"
   },
   "peerDependencies": {
-    "react": ">=0.14.0 <16.0.0",
-    "react-dom": ">=0.14.0 <16.0.0"
+    "react": ">=0.14.0 <17.0.0",
+    "react-dom": ">=0.14.0 <17.0.0"
   },
   "browserify": {
     "transform": [
@@ -57,16 +65,20 @@
     "build": "gulp clean && NODE_ENV=production gulp build",
     "examples": "gulp dev:server",
     "lint": "eslint ./; true",
+    "prettier": "prettier \"src/**/*.js\" --single-quote --no-config --ignore-path ./.prettierignore --write && git add . && git status",
     "publish:site": "gulp publish:examples",
     "publish:version": "gulp commit:version && gulp push",
     "start": "gulp dev",
-    "test": "gulp test --reporter list",
-    "tdd": "gulp watch:tests --reporter min",
-    "watch": "gulp watch:lib",
+    "test": "cross-env NODE_ENV=test mocha --require babel-register --require jsdom-global/register --reporter list",
+    "test:watch": "npm test -- --watch --reporter min",
+    "coverage": "nyc npm test && nyc report --reporter=lcov",
     "release": "npm run build && gulp bump && gulp release && npm run publish:version",
     "release:minor": "npm run build && gulp bump:minor && gulp release && npm run publish:version",
     "release:major": "npm run build && gulp bump:major && gulp release && npm run publish:version"
   },
+  "pre-commit": [
+    "prettier"
+  ],
   "engines": {
     "node": ">=4.0.0"
   },
@@ -78,5 +90,19 @@
     "react",
     "react-component"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "nyc": {
+    "include": [
+      "**/src/**/*.js"
+    ],
+    "exclude": [
+      "**/src/snapsvgImporter.js"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  }
 }

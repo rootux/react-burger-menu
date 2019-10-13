@@ -99,47 +99,18 @@ class Demo extends Component {
 
   getMenu() {
     const Menu = BurgerMenu[this.state.currentMenu];
-    const items = this.getItems();
-    let jsx;
-
-    if (this.state.side === 'right') {
-      jsx = (
-        <MenuWrap wait={20} side={this.state.side}>
-          <Menu id={this.state.currentMenu} pageWrapId={'page-wrap'} outerContainerId={'outer-container'} right>
-            {items}
-          </Menu>
-        </MenuWrap>
-      );
-    }
-    else if (this.state.side === 'top') {
-      jsx = (
-        <MenuWrap wait={20} side={this.state.side}>
-          <Menu id={this.state.currentMenu} pageWrapId={'page-wrap'} outerContainerId={'outer-container'} top>
-            {items}
-          </Menu>
-        </MenuWrap>
-      );
-    }
-    else if (this.state.side === 'bottom') {
-      jsx = (
-        <MenuWrap wait={20} side={this.state.side}>
-          <Menu id={this.state.currentMenu} pageWrapId={'page-wrap'} outerContainerId={'outer-container'} bottom>
-            {items}
-          </Menu>
-        </MenuWrap>
-      );
-    }
-    else {
-      jsx = (
-        <MenuWrap wait={20}>
-          <Menu id={this.state.currentMenu} pageWrapId={'page-wrap'} outerContainerId={'outer-container'}>
-            {items}
-          </Menu>
-        </MenuWrap>
-      );
-    }
-
-    return jsx;
+    
+    const side = this.state.side; 
+    const opts = {};
+    opts[side] = true;
+    
+    return (
+      <MenuWrap wait={20} side={side}>
+        <Menu id={this.state.currentMenu} pageWrapId={'page-wrap'} outerContainerId={'outer-container'} {...opts}>
+          {this.getItems()}
+        </Menu>
+      </MenuWrap>
+    );
   }
 
   render() {

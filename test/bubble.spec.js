@@ -4,8 +4,8 @@ import React from 'react';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import createShallowComponent from './utils/createShallowComponent';
-import BurgerMenu from '../lib/BurgerMenu';
-const Menu = BurgerMenu.bubble;
+import BurgerMenu from '../src/BurgerMenu';
+const Menu = BurgerMenu.bubble.default;
 
 describe('bubble', () => {
 
@@ -24,8 +24,8 @@ describe('bubble', () => {
 
   it('has correct menuWrap styles', () => {
     expect(menuWrap.props.style.position).to.equal('fixed');
-    expect(menuWrap.props.style.zIndex).to.equal(2);
-    expect(menuWrap.props.style.width).to.equal('300px');
+    expect(menuWrap.props.style.zIndex).to.equal(1100);
+    expect(menuWrap.props.style.width).to.equal(300);
     expect(menuWrap.props.style.height).to.equal('100%');
   });
 
@@ -42,7 +42,6 @@ describe('bubble', () => {
 
   it('has correct item styles', () => {
     expect(firstItem.props.style.display).to.equal('block');
-    expect(firstItem.props.style.outline).to.equal('none');
     expect(firstItem.props.style.opacity).to.equal(0);
   });
 

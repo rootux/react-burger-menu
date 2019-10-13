@@ -4,7 +4,7 @@ import React from 'react';
 import TestUtils from 'react-dom/test-utils';
 import { assert, expect } from 'chai';
 import createShallowComponent from './utils/createShallowComponent';
-import BurgerIcon from '../lib/BurgerIcon';
+import BurgerIcon from '../src/BurgerIcon';
 
 describe('BurgerIcon component', () => {
 
@@ -144,9 +144,9 @@ describe('BurgerIcon component', () => {
         margin: 0,
         padding: 0,
         border: 'none',
-        opacity: 0,
-        fontSize: 8,
-        cursor: 'pointer'
+        fontSize: 0,
+        cursor: 'pointer',
+        background: 'transparent'
       };
       expect(button.props.style).to.deep.equal(expected);
     });

@@ -4,8 +4,8 @@ import React from 'react';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import createShallowComponent from './utils/createShallowComponent';
-import BurgerMenu from '../lib/BurgerMenu';
-const Menu = BurgerMenu.slide;
+import BurgerMenu from '../src/BurgerMenu';
+const Menu = BurgerMenu.slide.default;
 
 describe('slide', () => {
 
@@ -23,8 +23,8 @@ describe('slide', () => {
     component = createShallowComponent(<Menu><div>An item</div></Menu>);
     const menuWrap = component.props.children[1];
     expect(menuWrap.props.style.position).to.equal('fixed');
-    expect(menuWrap.props.style.zIndex).to.equal(2);
-    expect(menuWrap.props.style.width).to.equal('300px');
+    expect(menuWrap.props.style.zIndex).to.equal(1100);
+    expect(menuWrap.props.style.width).to.equal(300);
     expect(menuWrap.props.style.height).to.equal('100%');
   });
 
@@ -42,7 +42,6 @@ describe('slide', () => {
   it('has correct item styles', () => {
     const firstItem = TestUtils.findRenderedDOMComponentWithClass(component, 'bm-item-list').children[0];
     expect(firstItem.style.display).to.equal('block');
-    expect(firstItem.style.outline).to.equal('none');
   });
 
   it('can be positioned on the right', () => {
